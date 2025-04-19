@@ -18,6 +18,12 @@ const API_LINKS = {
     UPDATE: (id: string) => `/authors/${id}`,
     DELETE: (id: string) => `/authors/${id}`,
   },
+  TAGS: {
+    GET_ALL: "/tags",
+    CREATE: "/tags",
+    UPDATE: (id: string) => `/tags/${id}`,
+    DELETE: (id: string) => `/tags/${id}`,
+  },
 };
 
 export default API_LINKS;

@@ -447,8 +447,9 @@ const ArticleManager = () => {
     setCurrentArticleId(null);
   };
 
-  const addTag = () => {
+  const addTag = async () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
+      const res = await post(API_LINKS.TAGS.CREATE, { tagName: newTag.trim() });
       setTags([...tags, newTag.trim()]);
       setNewTag("");
     }
