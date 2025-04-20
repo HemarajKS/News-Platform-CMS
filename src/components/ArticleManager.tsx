@@ -22,6 +22,7 @@ const ArticleManager = () => {
   const [mediaUrl, setMediaUrl] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentArticleId, setCurrentArticleId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchArticles();
@@ -30,18 +31,37 @@ const ArticleManager = () => {
   }, []);
 
   const fetchArticles = async () => {
-    const response = await get<{ data: any[] }>(API_LINKS.ARTICLES.GET_ALL);
-    setArticles(response.data);
+    setLoading(true);
+    try {
+      const response = await get<{ data: any[] }>(API_LINKS.ARTICLES.GET_ALL);
+      setArticles(response.data);
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
   };
 
   const fetchAuthors = async () => {
-    const response = await get<{ data: any[] }>(API_LINKS.AUTHORS.GET_ALL);
-    setAuthors(response.data);
+    try {
+      const response = await get<{ data: any[] }>(API_LINKS.AUTHORS.GET_ALL);
+      setAuthors(response.data);
+    } catch (error) {
+      console.error("Error fetching authors:", error);
+      return;
+    }
   };
 
   const fetchCategories = async () => {
-    const response = await get<{ data: any[] }>(API_LINKS.CATEGORIES.GET_ALL);
-    setCategories(response.data);
+    try {
+      const response = await get<{ data: any[] }>(API_LINKS.CATEGORIES.GET_ALL);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return;
+    }
   };
 
   interface ArticleData {
@@ -289,41 +309,45 @@ const ArticleManager = () => {
         </div>
       </form>
       <h2 className="text-xl font-semibold mt-8 mb-4">Existing Articles</h2>
-      <ul className="space-y-4">
-        {articles.map((article: Article) => (
-          <li
-            key={article.id}
-            className="p-4 border rounded shadow-md flex justify-between items-center"
-          >
-            <div>
-              <h3 className="text-lg font-medium">{article.title}</h3>
-              <p className="text-sm text-gray-600">{article.subtitle}</p>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleEdit(article)}
-                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to delete this article?"
-                    )
-                  ) {
-                    handleDelete(article._id);
-                  }
-                }}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {articles.length > 0 && !loading ? (
+        <ul className="space-y-4">
+          {articles.map((article: Article) => (
+            <li
+              key={article.id}
+              className="p-4 border rounded shadow-md flex justify-between items-center"
+            >
+              <div>
+                <h3 className="text-lg font-medium">{article.title}</h3>
+                <p className="text-sm text-gray-600">{article.subtitle}</p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleEdit(article)}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "Are you sure you want to delete this article?"
+                      )
+                    ) {
+                      handleDelete(article._id);
+                    }
+                  }}
+                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        "No articles found"
+      )}
     </div>
   );
 };
