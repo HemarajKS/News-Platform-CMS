@@ -9,7 +9,6 @@ const CategoryManager = () => {
     null
   );
   const [editingCategoryName, setEditingCategoryName] = useState("");
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Fetch categories on component mount
@@ -44,38 +43,29 @@ const CategoryManager = () => {
     }
   };
 
-  // Open the edit modal
-  const openEditModal = (categoryId: string, categoryName: string) => {
-    setEditingCategoryId(categoryId);
-    setEditingCategoryName(categoryName);
-    setIsEditModalOpen(true);
-  };
-
-  // Close the edit modal
-  const closeEditModal = () => {
-    setEditingCategoryId(null);
-    setEditingCategoryName("");
-    setIsEditModalOpen(false);
-  };
-
-  // Edit an existing category
-  const handleEditCategory = async () => {
+  // Save the edited category
+  const handleSaveEdit = async (categoryId: string) => {
     if (!editingCategoryName.trim()) {
       alert("Category name cannot be empty.");
       return;
     }
 
-    if (editingCategoryId) {
-      try {
-        await put(API_LINKS.CATEGORIES.UPDATE(editingCategoryId), {
-          categoryName: editingCategoryName,
-        });
-        closeEditModal();
-        fetchCategories();
-      } catch (error) {
-        console.error("Error editing category:", error);
-      }
+    try {
+      await put(API_LINKS.CATEGORIES.UPDATE(categoryId), {
+        categoryName: editingCategoryName,
+      });
+      setEditingCategoryId(null);
+      setEditingCategoryName("");
+      fetchCategories();
+    } catch (error) {
+      console.error("Error editing category:", error);
     }
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingCategoryId(null);
+    setEditingCategoryName("");
   };
 
   // Delete a category
@@ -121,62 +111,58 @@ const CategoryManager = () => {
               key={category.categoryId}
               className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"
             >
-              <span className="flex-1 text-gray-700">
-                {category.categoryName}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() =>
-                    openEditModal(category._id, category.categoryName)
-                  }
-                  className="px-3 py-1 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteCategory(category._id)}
-                  className="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
-                >
-                  Delete
-                </button>
-              </div>
+              {editingCategoryId === category._id ? (
+                // Inline Editing
+                <div className="flex-1 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editingCategoryName}
+                    onChange={(e) => setEditingCategoryName(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                  <button
+                    onClick={() => handleSaveEdit(category._id)}
+                    className="px-3 py-1 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-3 py-1 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                // Display Category
+                <>
+                  <span className="flex-1 text-gray-700">
+                    {category.categoryName}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingCategoryId(category._id);
+                        setEditingCategoryName(category.categoryName);
+                      }}
+                      className="px-3 py-1 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCategory(category._id)}
+                      className="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
       ) : (
         "No categories found."
-      )}
-
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Edit Category</h2>
-            <input
-              type="text"
-              value={editingCategoryName}
-              onChange={(e) => setEditingCategoryName(e.target.value)}
-              placeholder="Edit Category Name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-4"
-            />
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={closeEditModal}
-                className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  handleEditCategory();
-                }}
-                className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
