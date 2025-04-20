@@ -97,6 +97,7 @@ const ArticleManager = () => {
   }
 
   const handleEdit = (article: Article) => {
+    window.scrollTo(0, 0);
     setTitle(article.title);
     setSubtitle(article.subtitle);
     setDescription(article.description || "");
