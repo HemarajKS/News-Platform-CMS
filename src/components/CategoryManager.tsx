@@ -10,6 +10,7 @@ const CategoryManager = () => {
   );
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -18,12 +19,14 @@ const CategoryManager = () => {
 
   // Fetch all categories from the API
   const fetchCategories = async () => {
+    setLoading(true);
     try {
       const response = await get<{ data: any[] }>(API_LINKS.CATEGORIES.GET_ALL);
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
+    setLoading(false);
   };
 
   // Add a new category
@@ -111,34 +114,38 @@ const CategoryManager = () => {
       </div>
 
       {/* Category List */}
-      <ul className="space-y-4">
-        {categories.map((category) => (
-          <li
-            key={category.categoryId}
-            className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"
-          >
-            <span className="flex-1 text-gray-700">
-              {category.categoryName}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() =>
-                  openEditModal(category._id, category.categoryName)
-                }
-                className="px-3 py-1 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteCategory(category._id)}
-                className="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {categories.length > 0 && !loading ? (
+        <ul className="space-y-4">
+          {categories.map((category) => (
+            <li
+              key={category.categoryId}
+              className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"
+            >
+              <span className="flex-1 text-gray-700">
+                {category.categoryName}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    openEditModal(category._id, category.categoryName)
+                  }
+                  className="px-3 py-1 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteCategory(category._id)}
+                  className="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        "No categories found."
+      )}
 
       {/* Edit Modal */}
       {isEditModalOpen && (

@@ -12,6 +12,7 @@ const AuthorManager = () => {
   const [editingAuthorImage, setEditingAuthorImage] = useState("");
   const [editingAuthorDescription, setEditingAuthorDescription] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Fetch authors on component mount
   useEffect(() => {
@@ -20,12 +21,14 @@ const AuthorManager = () => {
 
   // Fetch all authors from the API
   const fetchAuthors = async () => {
+    setLoading(true);
     try {
       const response = await get<{ data: any[] }>(API_LINKS.AUTHORS.GET_ALL);
       setAuthors(response.data);
     } catch (error) {
       console.error("Error fetching authors:", error);
     }
+    setLoading(false);
   };
 
   // Add a new author
@@ -137,38 +140,44 @@ const AuthorManager = () => {
       </div>
 
       {/* Author List */}
-      <ul className="space-y-4">
-        {authors.map((author) => (
-          <li
-            key={author._id}
-            className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"
-          >
-            <div>
-              <h3 className="text-lg font-medium">{author.authorName}</h3>
-              <img
-                src={author.authorImage}
-                alt={author.authorName}
-                className="w-16 h-16 rounded-full object-cover mt-2"
-              />
-              <p className="text-sm text-gray-600 mt-2">{author.description}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => openEditModal(author)}
-                className="px-3 py-1 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteAuthor(author._id)}
-                className="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {authors.length > 0 && !loading ? (
+        <ul className="space-y-4">
+          {authors.map((author) => (
+            <li
+              key={author._id}
+              className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"
+            >
+              <div>
+                <h3 className="text-lg font-medium">{author.authorName}</h3>
+                <img
+                  src={author.authorImage}
+                  alt={author.authorName}
+                  className="w-16 h-16 rounded-full object-cover mt-2"
+                />
+                <p className="text-sm text-gray-600 mt-2">
+                  {author.description}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openEditModal(author)}
+                  className="px-3 py-1 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteAuthor(author._id)}
+                  className="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        "No authors found."
+      )}
 
       {/* Edit Modal */}
       {isEditModalOpen && (
