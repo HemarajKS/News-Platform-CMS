@@ -93,9 +93,19 @@ const ArticleManager = () => {
     };
 
     if (isEditing && currentArticleId) {
-      await put(API_LINKS.ARTICLES.UPDATE(currentArticleId), articleData);
+      try {
+        await put(API_LINKS.ARTICLES.UPDATE(currentArticleId), articleData);
+      } catch (error) {
+        console.error("Error updating article:", error);
+        return;
+      }
     } else {
-      await post(API_LINKS.ARTICLES.CREATE, articleData);
+      try {
+        await post(API_LINKS.ARTICLES.CREATE, articleData);
+      } catch (error) {
+        console.error("Error creating article:", error);
+        return;
+      }
     }
 
     resetForm();
@@ -132,8 +142,13 @@ const ArticleManager = () => {
   };
 
   const handleDelete = async (id: string) => {
-    await del(API_LINKS.ARTICLES.DELETE(id));
-    fetchArticles();
+    try {
+      await del(API_LINKS.ARTICLES.DELETE(id));
+      fetchArticles();
+    } catch (error) {
+      console.error("Error deleting article:", error);
+      return;
+    }
   };
 
   const resetForm = () => {
@@ -153,9 +168,16 @@ const ArticleManager = () => {
 
   const addTag = async () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
-      const res = await post(API_LINKS.TAGS.CREATE, { tagName: newTag.trim() });
-      setTags([...tags, newTag.trim()]);
-      setNewTag("");
+      try {
+        const res = await post(API_LINKS.TAGS.CREATE, {
+          tagName: newTag.trim(),
+        });
+        setTags([...tags, newTag.trim()]);
+        setNewTag("");
+      } catch (error) {
+        console.error("Error adding tag:", error);
+        return;
+      }
     }
   };
 
